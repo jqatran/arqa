@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <title>Дневник смен водителя</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+    <header class="topbar">
+        <div class="brand">
+            <span class="brand-mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 16V11l2-5h10l2 5v5"/><path d="M3 11h18"/><circle cx="7.5" cy="16.5" r="1.5"/><circle cx="16.5" cy="16.5" r="1.5"/>
+                </svg>
+            </span>
+            <h1 data-i18n="title">Дневник смен водителя</h1>
+        </div>
+        <div class="language-switch" role="group" data-i18n-aria-label="languageLabel" aria-label="Язык">
+            <button type="button" data-language="kk">ҚАЗ</button>
+            <button type="button" data-language="ru">РУС</button>
+            <button type="button" data-language="en">ENG</button>
+        </div>
+    </header>
+
+    <main>
+        <nav class="day-bar" data-i18n-aria-label="daySwitcherLabel" aria-label="Выбор дня">
+            <button id="previous-day" class="icon-button" type="button" data-i18n-aria-label="previousDay" aria-label="Предыдущий день">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <input id="selected-date" type="date" data-i18n-aria-label="dateLabel" aria-label="Дата">
+            <button id="next-day" class="icon-button" type="button" data-i18n-aria-label="nextDay" aria-label="Следующий день">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
+            <button id="latest-day" class="chip-button" type="button" data-i18n="latestDay">Последний день с поездками</button>
+        </nav>
+
+        <p id="status-message" role="status" hidden></p>
+
+        <section class="summary" aria-labelledby="summary-heading">
+            <h2 id="summary-heading" class="section-title" data-i18n="summaryHeading">Сводка за день</h2>
+
+            <div class="summary-grid">
+                <div class="hero-card">
+                    <span class="hero-label" data-i18n="netEarnings">На руки</span>
+                    <span class="hero-value" id="summary-net-earnings">–</span>
+                    <span class="hero-caption" id="hero-caption"></span>
+                </div>
+                <div class="tile">
+                    <span class="tile-label" data-i18n="tripCount">Поездок</span>
+                    <span class="tile-value" id="summary-trip-count">–</span>
+                </div>
+                <div class="tile">
+                    <span class="tile-label" data-i18n="revenue">Выручка</span>
+                    <span class="tile-value" id="summary-revenue">–</span>
+                </div>
+                <div class="tile">
+                    <span class="tile-label" data-i18n="commission">Комиссия</span>
+                    <span class="tile-value" id="summary-commission">–</span>
+                </div>
+            </div>
+
+            <div class="payment-split">
+                <div class="payment-bar" id="payment-bar" aria-hidden="true">
+                    <span class="payment-bar-cash" id="payment-bar-cash"></span>
+                    <span class="payment-bar-card" id="payment-bar-card"></span>
+                </div>
+                <div class="payment-legend">
+                    <div class="legend-item">
+                        <span class="dot dot-cash" aria-hidden="true"></span>
+                        <div>
+                            <span class="legend-label" data-i18n="cash">Наличные</span>
+                            <span class="legend-value" id="summary-cash">–</span>
+                            <span class="legend-note" id="summary-cash-note"></span>
+                        </div>
+                    </div>
+                    <div class="legend-item">
+                        <span class="dot dot-card" aria-hidden="true"></span>
+                        <div>
+                            <span class="legend-label" data-i18n="card">Карта</span>
+                            <span class="legend-value" id="summary-card">–</span>
+                            <span class="legend-note" id="summary-card-note"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="trips" aria-labelledby="trips-heading">
+            <div class="section-head">
+                <h2 id="trips-heading" class="section-title" data-i18n="tripsHeading">Поездки</h2>
+                <button id="open-add-trip" class="primary-button" type="button">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                    <span data-i18n="addTripButton">Добавить поездку</span>
+                </button>
+            </div>
+
+            <div class="table-card">
+                <table>
+                    <thead>
+                    <tr>
+                        <th data-i18n="columnTime">Время</th>
+                        <th class="number" data-i18n="columnAmount">Сумма</th>
+                        <th data-i18n="columnPayment">Оплата</th>
+                        <th class="number" data-i18n="commission">Комиссия</th>
+                        <th class="number" data-i18n="netEarnings">На руки</th>
+                    </tr>
+                    </thead>
+                    <tbody id="trips-body"></tbody>
+                </table>
+                <div id="empty-day-message" class="empty-state" hidden>
+                    <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M5 16V11l2-5h10l2 5v5"/><path d="M3 11h18"/><circle cx="7.5" cy="16.5" r="1.5"/><circle cx="16.5" cy="16.5" r="1.5"/>
+                    </svg>
+                    <span data-i18n="emptyDay">В этот день поездок нет.</span>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<dialog id="add-trip-dialog" aria-labelledby="add-trip-heading">
+    <form id="add-trip-form" novalidate>
+        <div class="dialog-head">
+            <h2 id="add-trip-heading" data-i18n="addHeading">Добавить поездку</h2>
+            <button id="close-add-trip" class="icon-button" type="button" data-i18n-aria-label="closeLabel" aria-label="Закрыть">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </button>
+        </div>
+
+        <div class="form-grid">
+            <label><span data-i18n="fieldStart">Начало</span> <input id="form-start" type="datetime-local" required></label>
+            <label><span data-i18n="fieldEnd">Окончание</span> <input id="form-end" type="datetime-local" required></label>
+            <label><span data-i18n="columnAmount">Сумма</span> <input id="form-amount" type="number" min="1" step="1" inputmode="numeric" required></label>
+            <label><span data-i18n="columnPayment">Оплата</span>
+                <select id="form-payment">
+                    <option value="card" data-i18n="card">Карта</option>
+                    <option value="cash" data-i18n="cash">Наличные</option>
+                </select>
+            </label>
+            <fieldset class="commission-block wide">
+                <legend data-i18n="commission">Комиссия</legend>
+                <div class="commission-row">
+                    <label><span data-i18n="commissionPercentLabel">Процент, %</span>
+                        <input id="form-commission-percent" type="number" min="0" max="100" step="0.01" inputmode="decimal">
+                    </label>
+                    <button id="calculate-commission" class="secondary-button" type="button" data-i18n="calculateButton">Рассчитать</button>
+                    <label><span data-i18n="commissionManualLabel">Комиссия вручную, ₸</span>
+                        <input id="form-commission" type="number" min="0" step="1" inputmode="numeric" required>
+                    </label>
+                </div>
+                <p id="commission-hint" class="commission-hint" data-i18n="commissionHelp">Введите процент и нажмите «Рассчитать» или впишите комиссию вручную</p>
+            </fieldset>
+        </div>
+
+        <p id="form-message" role="alert" hidden></p>
+        <p class="hint" data-i18n="formHint">Время указывается в вашем часовом поясе. Повторная отправка той же формы не создаёт дубль.</p>
+
+        <div class="dialog-actions">
+            <button id="cancel-add-trip" class="secondary-button" type="button" data-i18n="cancelButton">Отмена</button>
+            <button class="primary-button" type="submit" data-i18n="addButton">Добавить</button>
+        </div>
+    </form>
+</dialog>
+
+<div id="toast" role="status" aria-live="polite" hidden></div>
+
+<script src="translations.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
